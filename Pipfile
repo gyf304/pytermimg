@@ -8,6 +8,7 @@ pillow = "*"
 
 [dev-packages]
 black = "*"
+twine = "*"
 
 [requires]
 python_version = "3.9"
