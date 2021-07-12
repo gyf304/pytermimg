@@ -5,9 +5,10 @@ import typing as t
 import PIL.Image
 
 from ._base import ImagePrinterBase
-from ._utils import get_cursor, set_cursor
+from ..utils import get_cursor, set_cursor
 
 _SIXEL_TEST = b'\x1bPq"1;1;1;1#0;2;0;0;0-#0@\x1b\\'
+TRANSPARENT_THRESHOLD = 128
 
 
 class SixelPrinter(ImagePrinterBase):
@@ -48,7 +49,7 @@ class SixelPrinter(ImagePrinterBase):
         colors: t.Mapping[t.Tuple[int, int, int, int], int] = sixel_img.palette.colors
         for i, color in enumerate(colors.keys()):
             r, g, b, a = color
-            if a == 0:  # skip transparent colors
+            if a < TRANSPARENT_THRESHOLD:  # skip transparent colors
                 continue
             r = r * 100 // 255
             g = g * 100 // 255
@@ -62,7 +63,8 @@ class SixelPrinter(ImagePrinterBase):
 
         for sixel_row in range(sixel_rows):
             color_rows = [
-                bytearray(w) if a != 0 else None for _, _, _, a in colors.keys()
+                None if a < TRANSPARENT_THRESHOLD else bytearray(w)
+                for _, _, _, a in colors.keys()
             ]
             for col in range(w):
                 for sub_row in range(6):
@@ -91,5 +93,5 @@ class SixelPrinter(ImagePrinterBase):
         self._encode(img, buf)
         return buf.getvalue()
 
-    def print(self, img: PIL.Image.Image) -> None:
-        self._encode(img, sys.stdout.buffer)
+    def print(self, img: PIL.Image.Image, f: t.BinaryIO = sys.stdout.buffer) -> None:
+        self._encode(img, f)
