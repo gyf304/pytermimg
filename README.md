@@ -6,7 +6,7 @@
 
 ```bash
 # python3 only
-python -m pip install termimg
+python -m pip install pytermimg
 ```
 
 # Usage
